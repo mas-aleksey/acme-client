@@ -1,0 +1,75 @@
+name: "Build"
+
+permissions:
+  actions: read
+
+on:
+  push:
+    branches:
+    - main
+    - releases/*
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip poetry
+          poetry config virtualenvs.create false || true && poetry install --no-root
+
+      - name: Lint
+        run: |
+          ruff check .
+          black --check . --preview
+#
+#      - name: Pyright
+#        run: |
+#          pyright
+
+  test:
+    name: test py${{ matrix.python }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip poetry
+          poetry config virtualenvs.create false || true && poetry install
+
+      - name: test
+        run: |
+          poetry run pytest tests --cov=acme_client --cov-report=xml --cov-report=term --cov-branch
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+
+  build:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and publish to pypi
+        uses: JRubics/poetry-publish@v2.0
+        with:
+          pypi_token: ${{ secrets.token }}

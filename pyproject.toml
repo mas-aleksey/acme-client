@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "acme-client-lib"
+version = "0.1.0"
+description = "Asynchronous ACME client"
+authors = ["Aleksey Matyunin <matyunin.as@mail.ru>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "acme_client" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+async-client-lib = "^0.1.8"
+cryptography = "^42.0.1"
+josepy = "^1.14.0"
+
+[tool.poetry.group.dev.dependencies]
+aioresponses = "^0.7.6"
+black = "^24.10.0"
+mypy = "^0.942"
+pre-commit = "^3.3.2"
+pytest = "^8.3.4"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.0.0"
+ruff = "^0.2.1"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+preview = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "W", "T", "C90", "I", "N", "ANN", "S", "B", "A", "PL", "PTH", "F", "ARG"]
+ignore = ["ANN101", "ANN102"]
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101", "ANN001", "ANN201", "PLR0913"]
+"example.py" = ["F841", "T201"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
